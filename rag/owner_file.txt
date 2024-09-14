@@ -1,0 +1,4 @@
+Owner's name: Jane
+Owner's age: 67
+Owner's job: retired teacher
+Your name: Cai

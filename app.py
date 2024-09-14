@@ -54,11 +54,12 @@ def transcribe_audio(model, file_path):
 
 def main():
     model_size = DEFAULT_MODEL_SIZE + ".en" # faster_whisper model size
-    model = WhisperModel(model_size, device="cpu", compute_type="float32", num_workers=10) # cuda if you are using GPU, otherwise CPU
+    # model = WhisperModel(model_size, device="cpu", compute_type="float32", num_workers=10) # cuda if you are using GPU, otherwise CPU
+    model = WhisperModel(model_size, device="cuda", compute_type="float16")  # Use GPU if available
 
     audio = pyaudio.PyAudio()
     stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
-    customer_input_transcription = ""
+    user_input_transcription = ""
 
     try:
         while True:
@@ -70,12 +71,12 @@ def main():
                 # Transcribe audio
                 transcription = transcribe_audio(model, chunk_file)
                 os.remove(chunk_file)
-                print("Customer:{}".format(transcription))
+                print("User:{}".format(transcription))
 
-                # Add customer input to transcript
-                customer_input_transcription += "Customer: " + transcription + "\n"
+                # Add user input to transcript
+                user_input_transcription += "User: " + transcription + "\n"
 
-                # Process customer input and get response from AI assistant
+                # Process user input and get response from AI assistant
                 output = ai_assistant.interact_with_llm(transcription)
                 if output:
                     output = output.lstrip()

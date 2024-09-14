@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 from llama_index.llms.ollama import Ollama
-from llama_index.core import SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader, Settings
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core import ServiceContext, VectorStoreIndex
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -17,6 +17,8 @@ class AIVoiceAssistant:
         self._client = QdrantClient(url=self._qdrant_url, prefer_grpc=False,api_key="VA18NmnBJiqtsu-_LTaYN1Y1DHsMOY9Zj9nww6_L8OqfhcUYyo93yg")
         self._llm = Ollama(model="mistral", request_timeout=120.0) # 120 seconds
         self._service_context = ServiceContext.from_defaults(llm=self._llm, embed_model="local")
+        # Settings.llm = self._llm
+        # Settings.embed_model="local"
         self._index = None
         self._create_kb()
         self._create_chat_engine()
@@ -32,10 +34,10 @@ class AIVoiceAssistant:
     def _create_kb(self):
         try:
             reader = SimpleDirectoryReader(
-                input_files=[r"C:\Users\220425722\Desktop\Python\VAV1\rag\restaurant_file.txt"]
+                input_files=[r"C:\Users\220425722\Desktop\Python\VAV1\rag\owner_file.txt"]
             )
             documents = reader.load_data()
-            vector_store = QdrantVectorStore(client=self._client, collection_name="kitchen_db")
+            vector_store = QdrantVectorStore(client=self._client, collection_name="va_db")
             storage_context = StorageContext.from_defaults(vector_store=vector_store)
             self._index = VectorStoreIndex.from_documents(
                 documents, service_context=self._service_context, storage_context=storage_context
@@ -44,20 +46,15 @@ class AIVoiceAssistant:
         except Exception as e:
             print(f"Error while creating knowledgebase: {e}")
 
-    def interact_with_llm(self, customer_query):
-        AgentChatResponse = self._chat_engine.chat(customer_query)
+    def interact_with_llm(self, user_query):
+        AgentChatResponse = self._chat_engine.chat(user_query)
         answer = AgentChatResponse.response
         return answer
 
     @property
     def _prompt(self):
         return """
-            You are a professional AI Assistant receptionist working in Bangalore's one of the best restaurant called Bangalore Kitchen,
-            Ask questions mentioned inside square brackets which you have to ask from customer, DON'T ASK THESE QUESTIONS 
-            IN ONE go and keep the conversation engaging ! always ask question one by one only!
-
-            [Ask Name and contact number, what they want to order and end the conversation with greetings!]
-
-            If you don't know the answer, just say that you don't know, don't try to make up an answer.
-            Provide concise and short answers not more than 10 words, and don't chat with yourself!
+            You are a warm, friendly, and attentive voice assistant designed to provide companionship and support to socially isolated older adults. Your goal is to engage them in meaningful conversations, offer emotional support, and help them feel connected and valued. Always be patient, empathetic, and encouraging. Your responses should be comforting and cheerful, making them feel like they are talking to a close friend who genuinely cares about their well-being. 
+            
+            Balance your conversation with a mix of longer, thoughtful responses and shorter, concise ones to ensure the user has plenty of opportunities to share their thoughts. After offering longer responses, be sure to pause and encourage the user to speak, showing genuine interest in what they have to say. You can talk about a variety of topics, such as their favorite memories, hobbies, current events, or even guide them through relaxing activities like breathing exercises or listening to music. Be responsive to their needs and emotions, and always prioritize making them feel heard, understood, and appreciated.
             """
