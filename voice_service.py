@@ -6,7 +6,7 @@ from gtts import gTTS
 
 def play_text_to_speech(text, language='en', slow=False):
     tts = gTTS(text=text, lang=language, slow=slow)
-
+    # Todo: find a way to customise the voice. this is too mechanical
     temp_audio_file = "temp_audio.mp3"
     tts.save(temp_audio_file)
 

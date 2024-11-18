@@ -13,10 +13,10 @@ warnings.filterwarnings("ignore")
 
 class AIVoiceAssistant:
     def __init__(self):
-        self._qdrant_url = "https://c0ab1906-d3bf-4175-931f-3b9789d5e007.europe-west3-0.gcp.cloud.qdrant.io"
-        self._client = QdrantClient(url=self._qdrant_url, prefer_grpc=False,api_key="VA18NmnBJiqtsu-_LTaYN1Y1DHsMOY9Zj9nww6_L8OqfhcUYyo93yg")
+        self._qdrant_url = "https://83a4aa67-c595-4f58-a5e3-f5d6eb107808.us-east4-0.gcp.cloud.qdrant.io"
+        self._client = QdrantClient(url=self._qdrant_url, prefer_grpc=False,api_key="zwDHhJD-ZlGfAEYRnNQSTCOKi_eLQFTDa-CbFOS-HMmAmBO00KP89Q")
         self._llm = Ollama(model="mistral", request_timeout=120.0) # 120 seconds
-        self._service_context = ServiceContext.from_defaults(llm=self._llm, embed_model="local")
+        self._service_context = ServiceContext.from_defaults(llm=self._llm, embed_model="local:sentence-transformers/all-MiniLM-L6-v2")
         # Settings.llm = self._llm
         # Settings.embed_model="local"
         self._index = None

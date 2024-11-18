@@ -7,11 +7,13 @@ from faster_whisper import WhisperModel
 
 import voice_service as vs
 from rag.AIVoiceAssistant import AIVoiceAssistant
+from rag.AIVA import AIVA
 
 DEFAULT_MODEL_SIZE = "medium"
 DEFAULT_CHUNK_LENGTH = 10
 
-ai_assistant = AIVoiceAssistant()
+# ai_assistant = AIVoiceAssistant()
+ai_assistant = AIVA()
 
 
 def is_silence(data, max_amplitude_threshold=3000):
@@ -54,8 +56,8 @@ def transcribe_audio(model, file_path):
 
 def main():
     model_size = DEFAULT_MODEL_SIZE + ".en" # faster_whisper model size
-    # model = WhisperModel(model_size, device="cpu", compute_type="float32", num_workers=10) # cuda if you are using GPU, otherwise CPU
-    model = WhisperModel(model_size, device="cuda", compute_type="float16")  # Use GPU if available
+    model = WhisperModel(model_size, device="cpu", compute_type="float32", num_workers=10) # cuda if you are using GPU, otherwise CPU
+    # model = WhisperModel(model_size, device="cuda", compute_type="float16")  # Use GPU if available
 
     audio = pyaudio.PyAudio()
     stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
@@ -80,8 +82,16 @@ def main():
                 output = ai_assistant.interact_with_llm(transcription)
                 if output:
                     output = output.lstrip()
-                    vs.play_text_to_speech(output)
                     print("AI Assistant:{}".format(output))
+
+                    # Stop microphone input to avoid feedback
+                    stream.stop_stream()
+
+                    # Play the TTS response
+                    vs.play_text_to_speech(output)
+
+                    # Restart microphone input after response completes
+                    stream.start_stream()
 
 
 
