@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="envminiconda" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="VAV14" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="VAV1_gpu1" project-jdk-type="Python SDK" />
 </project>

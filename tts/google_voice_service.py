@@ -5,9 +5,10 @@ from gtts import gTTS
 
 
 def play_text_to_speech(text, language='en', slow=False):
+    start_time = time.time()  # Start time measurement
     tts = gTTS(text=text, lang=language, slow=slow)
-    # Todo: find a way to customise the voice. this is too mechanical
-    temp_audio_file = "temp_audio.mp3"
+    # Todo: find a way to customise the voice to be more human-like. this is too mechanical
+    temp_audio_file = "../temp_audio.mp3"
     tts.save(temp_audio_file)
 
     pygame.mixer.init()
@@ -22,3 +23,7 @@ def play_text_to_speech(text, language='en', slow=False):
 
     time.sleep(3)
     os.remove(temp_audio_file)
+
+    end_time = time.time()  # End time measurement
+    execution_time = end_time - start_time
+    print(f"TTS Execution Time: {execution_time:.2f} seconds")  # Print the total execution time
