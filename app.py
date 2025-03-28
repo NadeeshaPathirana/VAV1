@@ -1,115 +1,107 @@
-import os
 import time
-import wave
 import pyaudio
 import numpy as np
-from scipy.io import wavfile
 from faster_whisper import WhisperModel
 
 from tts import google_voice_service as vs
-# from tts import coqui_voice_service as cs
 from rag.AIVA import AIVA
+from rag.AIVA_Chroma import AIVA_Chroma
 
 DEFAULT_MODEL_SIZE = "medium"
-DEFAULT_CHUNK_LENGTH = 10
+DEFAULT_CHUNK_LENGTH = 4
 
-# ai_assistant = AIVoiceAssistant()
-ai_assistant = AIVA()
+# ai_assistant = AIVoiceAssistant() # first version
+# ai_assistant = AIVA() # second version
+ai_assistant = AIVA_Chroma()
 
+# trying to optimise the recording process
 
-def is_silence(data, max_amplitude_threshold=3000):
+def is_silence(data, threshold=500):
     """Check if audio data contains silence."""
-    max_amplitude = np.max(np.abs(data))
-    return max_amplitude <= max_amplitude_threshold
-
-
-def record_audio_chunk(audio, stream, chunk_length=DEFAULT_CHUNK_LENGTH):
-    start_time = time.time()  # Start time measurement
+    return np.max(np.abs(data)) < threshold
+def record_audio_chunk(stream, chunk_length=DEFAULT_CHUNK_LENGTH):
     frames = []
     for _ in range(0, int(16000 / 1024 * chunk_length)):
         data = stream.read(1024)
         frames.append(data)
 
-    temp_file_path = 'temp_audio_chunk.wav'
-    with wave.open(temp_file_path, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-        wf.setframerate(16000)
-        wf.writeframes(b''.join(frames))
+    # Convert to numpy array
+    audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
 
-    # Check if the recorded chunk contains silence
-    try:
-        samplerate, data = wavfile.read(temp_file_path)
-        if is_silence(data):
-            os.remove(temp_file_path)
-            return True
-        else:
-            end_time = time.time()  # End time measurement
-            execution_time = end_time - start_time
-            print(f"Record Audio Execution Time: {execution_time:.2f} seconds")  # Print the total execution time
-            return False
-    except Exception as e:
-        print(f"Error while reading audio file: {e}")
-        return False
+    # Check for silence
+    if is_silence(audio_data):
+        return None  # Indicate silence
+    else:
+        return audio_data  # Return audio chunk
 
 
-def transcribe_audio(model, file_path):
-    start_time = time.time()
-    segments, info = model.transcribe(file_path, beam_size=7)
-    transcription = ' '.join(segment.text for segment in segments)
-    end_time = time.time()  # End time measurement
-    execution_time = end_time - start_time
-    print(f"Transcribe Audio Execution Time: {execution_time:.2f} seconds")  # Print the total execution time
-    return transcription
+def transcribe_audio(model, audio_data):
+    """Transcribe audio directly from numpy array."""
+    segments, _ = model.transcribe(audio_data, beam_size=7)
+    return ' '.join(segment.text for segment in segments)
+
+
+def detect_pause(start_time, pause_duration=2.0):
+    """Check if silence has lasted long enough to trigger a stop."""
+    return (time.time() - start_time) >= pause_duration
 
 
 def main():
-    model_size = DEFAULT_MODEL_SIZE + ".en" # faster_whisper model size
-    # model = WhisperModel(model_size, device="cpu", compute_type="float32", num_workers=10) # cuda if using GPU, otherwise CPU
-    model = WhisperModel(model_size, device="cuda", compute_type="float16")  # Use GPU if available
-    # TODO: change this code to run in the server
+    model_size = DEFAULT_MODEL_SIZE + ".en"
+    model = WhisperModel(model_size, device="cuda", compute_type="float16")
+
     audio = pyaudio.PyAudio()
     stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
-    user_input_transcription = ""
 
     try:
         while True:
-            chunk_file = "temp_audio_chunk.wav"
-            # Todo: allow user to interrupt while the VA is talking
-
-            # Record audio chunk
             print("_")
-            if not record_audio_chunk(audio, stream):
-                # Transcribe audio
-                transcription = transcribe_audio(model, chunk_file)
-                os.remove(chunk_file)
+            concat_transcription = ''
+            start_silence_time = None
 
+            while True:
+                start_time = time.time()
+                audio_data = record_audio_chunk(stream)
 
-                # Add user input to transcript
-                user_input_transcription += "User: " + transcription + "\n"
-                # Process user input and get response from AI assistant
-                print("User:{}".format(transcription))
-                output = ai_assistant.interact_with_llm(transcription)
-                if output:
-                    output = output.lstrip()
-                    print("AI Assistant:{}".format(output))
+                if audio_data is None:
+                    # Start counting silence time
+                    if start_silence_time is None:
+                        start_silence_time = time.time()
 
-                    # Stop microphone input to avoid feedback
+                    if detect_pause(start_silence_time):
+                        print("Silence detected. Stopping recording...")
+                        end_time = time.time()  # End time measurement
+                        execution_time = end_time - start_time
+                        print(
+                            f"Recording Audio Execution Time: {execution_time:.2f} seconds")  # Print the total execution time
+                        break  # Stop recording
+                else:
+                    start_silence_time = None  # Reset silence timer
+
+                    # Transcribe on the fly
+                    transcription = transcribe_audio(model, audio_data)
+                    # print(f"Transcription: {transcription}")
+                    concat_transcription += " " + transcription
+
+            if concat_transcription.strip():
+                print(f"User: {concat_transcription}")
+                response = ai_assistant.interact_with_llm(concat_transcription)
+
+                if response:
+                    response = response.lstrip()
+                    print(f"AI Assistant: {response}")
+
+                    # Stop mic input to avoid feedback
                     stream.stop_stream()
 
-                    # Play the TTS response
-                    # TODO: Format the text response so that it is appropriate for the spoken language.
-                    vs.play_text_to_speech(output)
-                    # cs.play_text_to_speech(output)
+                    # Play the AI response
+                    vs.play_text_to_speech(response)
 
-                    # Restart microphone input after response completes
+                    # Restart mic input
                     stream.start_stream()
-
-
 
     except KeyboardInterrupt:
         print("\nStopping...")
-
     finally:
         stream.stop_stream()
         stream.close()
