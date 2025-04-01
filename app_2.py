@@ -20,7 +20,7 @@ DEFAULT_CHUNK_LENGTH = 10
 # ai_assistant = AIVA()
 ai_assistant = AIVA_Chroma()
 
-# before optimising recording process
+# V2 - trying to optimise the recording process - without reading or writing the audio file
 
 def is_silence(data, threshold=500):
     """Check if audio data contains silence."""

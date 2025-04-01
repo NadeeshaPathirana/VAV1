@@ -12,13 +12,13 @@ from rag.AIVA import AIVA
 from rag.AIVA_Chroma import AIVA_Chroma
 
 DEFAULT_MODEL_SIZE = "medium"
-DEFAULT_CHUNK_LENGTH = 4
+DEFAULT_CHUNK_LENGTH = 10
 
 # ai_assistant = AIVoiceAssistant()
 # ai_assistant = AIVA()
 ai_assistant = AIVA_Chroma()
 
-# before optimising recording process
+# V1 - before optimising recording process
 
 def is_silence(data, threshold=500):
     """Check if audio data contains silence."""
