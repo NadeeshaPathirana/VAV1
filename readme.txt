@@ -40,6 +40,3 @@ ACCESS_TOKEN: {
 }
 
 
-Open AI
--------------
-API KEY - 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
