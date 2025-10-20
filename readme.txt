@@ -32,7 +32,6 @@ communicate with local LLM model - curl -X POST http://localhost:11434/api/gener
 Speechify tts
 ------------------
 Authorization: Bearer <API_KEY or ACCESS_TOKEN>
-API_KEY: QIHahHnD_kqpgxGzyW9c5LZyobsqmsqEJ7XRfaw_UmE=
 ACCESS_TOKEN: {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTkyNDg2NDIsImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.hECdUmhFI5rF-3FsEsFK8gWeOti066tL1tAZ6sXlPSA",
   "token_type": "bearer",

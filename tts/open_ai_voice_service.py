@@ -1,9 +1,11 @@
 import simpleaudio as sa
 from pathlib import Path
 from openai import OpenAI
+import os
 
 # Initialize client
-client = OpenAI(api_key="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")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Output file path
 speech_file_path = Path("output.wav")
