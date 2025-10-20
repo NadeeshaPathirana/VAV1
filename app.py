@@ -5,7 +5,11 @@ from faster_whisper import WhisperModel
 from scipy.io import wavfile
 
 from emotion_recognition.SpeechEmotionRecognizer import SpeechEmotionRecognizer
-from tts import google_voice_service as vs
+# from emotion_recognition.SpeechEmotionRecognizerV2 import SpeechEmotionRecognizerV2
+# from tts import google_voice_service as vs
+# from tts import pyttx_tts_voice_service as vs
+from tts import coqui_voice_service as vs
+# from tts import speechify_voice_service as vs
 from rag.AIVA import AIVA
 from rag.AIVA_Chroma import AIVA_Chroma
 
@@ -15,8 +19,8 @@ DEFAULT_CHUNK_LENGTH = 0.5  # smaller this value -> audio recording is efficient
 # ai_assistant = AIVoiceAssistant() # first version
 # ai_assistant = AIVA() # second version
 ai_assistant = AIVA_Chroma()
-recognizer = SpeechEmotionRecognizer("C:/Users/220425722/Desktop/Python/Emotion Recognition/saved_model")
-
+recognizer = SpeechEmotionRecognizer("C:/Users/220425722/Desktop/Python/Emotion Recognition/saved_model/Model_18.1/")
+# recognizer = SpeechEmotionRecognizerV2()
 
 # V3 - trying to optimise the recording process
 
@@ -71,8 +75,9 @@ def main():
     stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
 
     try:
-        audio_chunks = []
+
         while True:
+            audio_chunks = []
             print("_")
             start_silence_time = None
 
@@ -106,7 +111,7 @@ def main():
                 audio_chunks = []
                 if transcription.strip():
                     print(f"User: {transcription}")
-                    response = ai_assistant.interact_with_llm(transcription)
+                    response = ai_assistant.interact_with_llm(transcription, emotion)
 
                     if response:
                         response = response.lstrip()

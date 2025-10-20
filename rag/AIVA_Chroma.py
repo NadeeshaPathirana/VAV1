@@ -10,6 +10,31 @@ from llama_index.core.storage.storage_context import StorageContext
 from bs4 import BeautifulSoup
 import requests
 from googleapiclient.discovery import build
+from typing import List
+
+
+from sentence_transformers import SentenceTransformer
+from llama_index.core.embeddings import BaseEmbedding
+
+class LocalHFEmbedding(BaseEmbedding):
+    model: SentenceTransformer  # declare as field
+
+    # Use a classmethod constructor instead of __init__ for offline model
+    @classmethod
+    def from_local_path(cls, model_path: str):
+        model = SentenceTransformer(model_path)
+        return cls(model=model)
+
+    # Required sync embedding methods
+    def _get_text_embedding(self, text: str) -> List[float]:
+        return self.model.encode([text])[0].tolist()
+
+    def _get_query_embedding(self, texts: List[str]) -> List[List[float]]:
+        return self.model.encode(texts).tolist()
+
+    # async version
+    async def _aget_query_embedding(self, texts: List[str]) -> List[List[float]]:
+        return self._get_query_embedding(texts)
 
 # 3rd version of AIVA. Use Chroma DB instead of Qdrant
 class AIVA_Chroma:
@@ -18,8 +43,17 @@ class AIVA_Chroma:
         if self._chroma_client is None:
             raise RuntimeError("Failed to initialize ChromaDB PersistentClient.")
         self._llm = Ollama(model="mistral", request_timeout=120.0)  # 120 seconds
-        self._service_context = ServiceContext.from_defaults(llm=self._llm,
-                                                             embed_model="local:sentence-transformers/all-MiniLM-L6-v2") # a lightweight Sentence Transformer model
+
+        embed_model = LocalHFEmbedding(
+            model=SentenceTransformer(
+                r"C:\Users\220425722\.cache\huggingface\hub\models--sentence-transformers--all-MiniLM-L6-v2\snapshots\c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+            )
+        )  # path to downloaded model
+
+        self._service_context = ServiceContext.from_defaults(
+            llm=self._llm,  # your local LLM object
+            embed_model=embed_model
+        ) # a lightweight Sentence Transformer model
         self._index = None
         self.model = model
         # self._api_key = 'AIzaSyAB_yU07EvwEc2D0pK8hJhoxjQZPwFUHxc'
@@ -29,10 +63,10 @@ class AIVA_Chroma:
         self._create_chat_engine()
 
     def _create_chat_engine(self):
-        memory = ChatMemoryBuffer.from_defaults(token_limit=1500)
+        self._memory = ChatMemoryBuffer.from_defaults(token_limit=1500)
         self._chat_engine = self._index.as_chat_engine(
             chat_mode="context",
-            memory=memory,
+            memory=self._memory,
             system_prompt=self._prompt,
         )
 
@@ -65,6 +99,9 @@ class AIVA_Chroma:
                 documents, service_context=self._service_context, storage_context=storage_context
             )
 
+            # save index
+            self._index.storage_context.persist(persist_dir="storage") # TODO: write code to reuse the stored indices
+
             print("Knowledgebase created successfully using ChromaDB!")
 
         except Exception as e:
@@ -90,12 +127,8 @@ class AIVA_Chroma:
             print(f"Error scraping {url}: {e}")
             return None
 
-    def interact_with_llm(self, user_query):
+    def interact_with_llm(self, user_query, emotion):
         start_time = time.time()
-        # TODO: interact with internet to fetch related data -> tried. this does not work by simply searching the query here.
-        #  it needs more structured mechanism. otherwise, search content might not match the context of the conversation.
-        #  Also, combining the web_data to the user_query does not always work. Most of the time LLM disregards the given webdata
-
         # search_results = self.google_search(user_query, self._api_key, self._cse_id, num_results=3)
 
         web_data = ""

@@ -13,10 +13,34 @@ For CPU:
 3. Install CPU requirements file in CPU virtual env ---> pip install -r requirements.txt
 
 For GPU:
-4. Use virtual env - VAV1_gpu1
-5. Install GPU requirements file in GPU virtual environment ---> pip install -r requirements.txt
-6. For GPU - Install pytorch with - pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 (this is working wiht CUDA 11x) or try pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu118
+2. Use virtual env - VAV1_gpu1
+3. Install GPU requirements file in GPU virtual environment ---> pip install -r requirements.txt
+4. For GPU - Install pytorch with - pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 (this is working wiht CUDA 11x) or try pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu118
 
-5. Start Ollama local server -> Ollama serve
+For Testing:
+2. Use virtual env - VAV1_test_gpu
+3. Install TEST requirements file in TEST virtual environment ---> pip install -r requirements.txt
+4. For GPU - Install pytorch with - pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 (this is working wiht CUDA 11x) or try pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu118
+5. Install addition libraries required for the current testing purposes
+
+6. Start Ollama local server -> Ollama serve
+7. While still online, run the code in test.txt for sentence-transformers/all-MiniLM-L6-v2. Sentence transformer will be cached.
 
 communicate with local LLM model - curl -X POST http://localhost:11434/api/generate -H "Content-Type: application/json" -d "{\"model\": \"mistral\", \"prompt\": \"Hello, how are you?\"}"
+
+
+Speechify tts
+------------------
+Authorization: Bearer <API_KEY or ACCESS_TOKEN>
+API_KEY: QIHahHnD_kqpgxGzyW9c5LZyobsqmsqEJ7XRfaw_UmE=
+ACCESS_TOKEN: {
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTkyNDg2NDIsImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.hECdUmhFI5rF-3FsEsFK8gWeOti066tL1tAZ6sXlPSA",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "scope": "audio:all voices:read"
+}
+
+
+Open AI
+-------------
+API KEY - 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

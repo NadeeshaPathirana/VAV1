@@ -2,3 +2,8 @@ Owner's name: Jane
 Owner's age: 67
 Owner's job: retired teacher
 Your name: Cai
+Owner's gender: Female
+Owner's mother tongue: English
+Owner's hometown: Birmingham England
+Owner's family: husband, daughter, son
+Owner's hobby: reading, listening to music

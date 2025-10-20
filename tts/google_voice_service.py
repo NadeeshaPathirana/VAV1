@@ -7,7 +7,6 @@ from gtts import gTTS
 def play_text_to_speech(text, language='en', slow=False):
     start_time = time.time()  # Start time measurement
     tts = gTTS(text=text, lang=language, slow=slow)
-    # Todo: find a way to customise the voice to be more human-like. this is too mechanical
     temp_audio_file = "../temp_audio.mp3"
     tts.save(temp_audio_file)
 

@@ -1,6 +1,6 @@
 import torch
 import librosa
-from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
+from transformers import Wav2Vec2ForSequenceClassification, HubertForSequenceClassification, Wav2Vec2FeatureExtractor
 import numpy as np
 
 
@@ -11,11 +11,14 @@ class SpeechEmotionRecognizer:
         :param model_path: Path to the trained model directory.
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = Wav2Vec2ForSequenceClassification.from_pretrained(model_path).to(self.device)
+        self.model = HubertForSequenceClassification.from_pretrained(model_path).to(self.device)
+        # self.model = Wav2Vec2ForSequenceClassification.from_pretrained(model_path).to(self.device)
         self.model.eval()
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.emotion_labels = {0: "Happy", 1: "Sad", 2: "Angry", 3: "Neutral", 4: "Disgust", 5: "Fear"}
-        self.max_length = 3200
+        self.emotion_labels = {0: 'happy', 1: 'sad', 2: 'angry'}
+        # self.emotion_labels = {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'neutral', 5: 'ps', 6: 'sad'}
+
+        self.max_length = 32000
 
     def predict_emotion(self, file_path):
         """
@@ -26,7 +29,7 @@ class SpeechEmotionRecognizer:
         # Load and preprocess audio
         speech, sr = librosa.load(file_path, sr=16000)  # Ensure 16kHz sampling rate
 
-        # pad or truncate the speech to the required lenght
+        # pad or truncate the speech to the required length
         if len(speech) > self.max_length:
             speech = speech[:self.max_length]
         else:
