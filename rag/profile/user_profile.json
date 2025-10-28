@@ -1,0 +1,62 @@
+{
+  "personal_info": {
+    "name": "Jane Doe",
+    "age": 78,
+    "gender": "female"
+  },
+  "preferences": {
+    "music": ["oriental", "classical"],
+    "topics": ["gardening", "history"],
+    "hobbies": ["gardening", "cooking", "polo"],
+    "daily_routine": "morning walks and afternoon tea",
+    "weekly specials": ["saturday brunch with family", "stroll in the park, 3 times a week"]
+  },
+  "health": {
+    "conditions": ["hypertension"],
+    "mobility_level": "moderate"
+  },
+  "emotional_state": {
+    "baseline_mood": "calm",
+    "recent_mood": "lonely"
+  },
+  "interaction_style": {
+    "tone_preference": "warm",
+    "response_length": "short"
+  },
+  "relationship": {
+    "relationship_status": "married",
+    "partner": "Mr Jone",
+    "Children": ["Anna", "Mike"],
+    "close_friends": ["Jason, Michel, Ann, Helen"],
+    "pets": "no pets"
+  },
+  "education": {
+    "education_level": "advanced_degree",
+    "area_of_expertise": "computer science"
+  },
+  "professional_background": {
+    "occupation": "retired teacher",
+    "work_experience": "Worked as a teacher for 35 years before retiring"
+  },
+  "user_environment": {
+    "technology_experience_level": "intermediate",
+    "technological_devices_in_use": ["smartphone"],
+    "time_most_spent_on": "household chores",
+    "frequency_of_engaging_with_other_humans": "few times a day"
+  },
+  "psychographics": {
+    "enjoy": ["talking to people", "gardening", "cooking", "walking in the neighbourhood", "playing board games"],
+    "hate": ["eating alone", "walking long distance"],
+    "appreciate": ["slow mornings", "sharing house chores with husband"],
+    "tend": ["talk to strangers in shops", "buy goods from farmers market rather than supermarkets"]
+  },
+  "user_end_goals": ["companionship", "humor"],
+  "personality_traits": {
+    "overall_score": 0.5,
+    "openness_score": 0.5,
+    "conscientiousness_score": 0.6,
+    "extraversion_score": 0.5,
+    "agreeableness_score": 0.4,
+    "neuroticism_score": 0.2
+  }
+}

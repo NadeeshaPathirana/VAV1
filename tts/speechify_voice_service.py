@@ -4,7 +4,7 @@ import simpleaudio as sa
 import base64
 
 client = Speechify(
-    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTYyMDAsImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.qReW5VureZ9QPo5EeOm8P0dyWPgFAdv-_LZ1O3lJbQg",
+    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjE1NjMyODksImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.Edms1GpFZr0Dr5szA6tu_f7oorrlszFFBZow_9xU9b4",
 )
 
 def play_text_to_speech(text):
@@ -31,4 +31,4 @@ def play_text_to_speech(text):
         print(e.status_code)
         print(e.body)
 
-play_text_to_speech("<speak><speechify:style emotion=\"angry\">Hi there </speechify:style></speak>")
+play_text_to_speech("<speak><speechify:style emotion=\"sad\">Hi there, what are you doing? I dont want to do that. </speechify:style></speak>")
