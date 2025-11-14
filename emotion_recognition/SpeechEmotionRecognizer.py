@@ -15,8 +15,7 @@ class SpeechEmotionRecognizer:
         # self.model = Wav2Vec2ForSequenceClassification.from_pretrained(model_path).to(self.device)
         self.model.eval()
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.emotion_labels = {0: 'happy', 1: 'sad', 2: 'angry'}
-        # self.emotion_labels = {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'neutral', 5: 'ps', 6: 'sad'}
+        self.emotion_labels = {0: "Anger", 1: "Happiness", 2: "Sadness", 3: "Neutral"}
 
         self.max_length = 32000
 

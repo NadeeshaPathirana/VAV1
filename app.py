@@ -19,7 +19,7 @@ DEFAULT_CHUNK_LENGTH = 0.5  # smaller this value -> audio recording is efficient
 # ai_assistant = AIVoiceAssistant() # first version
 # ai_assistant = AIVA() # second version
 ai_assistant = AIVA_Chroma()
-recognizer = SpeechEmotionRecognizer("C:/Users/220425722/Desktop/Python/Emotion Recognition/saved_model/Model_18.1/")
+recognizer = SpeechEmotionRecognizer("C:/Users/220425722/Desktop/Python/Emotion Recognition/Improved Models/s3prl logs/Hubert/s3prl_hubert_model/")
 # recognizer = SpeechEmotionRecognizerV2()
 
 # V3 - trying to optimise the recording process

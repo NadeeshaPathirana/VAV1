@@ -1,12 +1,12 @@
 {
-  "personal_info": {
-    "name": "Jane Doe",
-    "age": 78,
-    "gender": "female"
+  "owner's_personal_info": {
+    "owner's_name": "Jane Doe",
+    "owner's_age": 78,
+    "owner's_gender": "female"
   },
   "preferences": {
     "music": ["oriental", "classical"],
-    "topics": ["gardening", "history"],
+    "topics_to_talk": ["gardening", "history"],
     "hobbies": ["gardening", "cooking", "polo"],
     "daily_routine": "morning walks and afternoon tea",
     "weekly specials": ["saturday brunch with family", "stroll in the park, 3 times a week"]
@@ -31,7 +31,7 @@
     "pets": "no pets"
   },
   "education": {
-    "education_level": "advanced_degree",
+    "education_level": "advanced degree in computer science",
     "area_of_expertise": "computer science"
   },
   "professional_background": {
@@ -50,7 +50,7 @@
     "appreciate": ["slow mornings", "sharing house chores with husband"],
     "tend": ["talk to strangers in shops", "buy goods from farmers market rather than supermarkets"]
   },
-  "user_end_goals": ["companionship", "humor"],
+  "user_end_goals_from_Cai": ["companionship", "humor"],
   "personality_traits": {
     "overall_score": 0.5,
     "openness_score": 0.5,

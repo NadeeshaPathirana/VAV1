@@ -56,7 +56,12 @@
 #     info = audio.get_device_info_by_index(i)
 #     print(f"{i}: {info['name']}")
 
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
+#
+# # Run this once while online
+# SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-# Run this once while online
-SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+import sys
+sys.path.append("C:/Users/220425722/.conda/envs/VAV1_test_gpu/Lib/site-packages/s3prl/s3prl/s3prl")
+
+print(sys.path)

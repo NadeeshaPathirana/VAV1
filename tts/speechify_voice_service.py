@@ -4,14 +4,33 @@ import simpleaudio as sa
 import base64
 
 client = Speechify(
-    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjE1NjMyODksImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.Edms1GpFZr0Dr5szA6tu_f7oorrlszFFBZow_9xU9b4",
+    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjMwNDYxMDQsImlzcyI6InNwZWVjaGlmeS1hcGkiLCJzY29wZSI6ImF1ZGlvOmFsbCB2b2ljZXM6cmVhZCIsInN1YiI6IjR3aFJTT1cybEhOMTJTQjdxYkQ1OWhUelJ2ZjEifQ.unRIgvITJk991JUPeuvjsOCPthQ3vVHw8S4WQamVRW8",
 )
 
-def play_text_to_speech(text):
+
+def get_emotion(emotion):
+    if emotion == 'Happiness':
+        emotion_req = 'cheerful'
+    elif emotion == 'Anger':
+        emotion_req = 'calm'
+    elif emotion == 'Sadness':
+        emotion_req = 'sad'
+    else:
+        emotion_req = ''
+    return emotion_req
+
+
+def play_text_to_speech(text, emotion):
+    emotion_req = get_emotion(emotion)
+    if emotion_req == '':
+        inp = "<speak>" + text + "</speak>"
+    else:
+        print(emotion_req)
+        inp = "<speak><speechify:style emotion=\"" + emotion_req + "\">" + text + "</speechify:style></speak>"
     try:
         response = client.tts.audio.speech(
-            input=text,
-            voice_id="lisa",  # Replace with a real Speechify voice ID
+            input=inp,
+            voice_id="lisa",
             model="simba-english",
             # emotion='sad',
         )
@@ -31,4 +50,6 @@ def play_text_to_speech(text):
         print(e.status_code)
         print(e.body)
 
-play_text_to_speech("<speak><speechify:style emotion=\"sad\">Hi there, what are you doing? I dont want to do that. </speechify:style></speak>")
+
+# Neutral => "", Happiness => "cheerful", Anger => "calm", Sadness => "sad"
+play_text_to_speech("Hi there, what are you doing? I dont want to do that.", "Happiness")
