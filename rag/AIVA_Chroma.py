@@ -13,6 +13,7 @@ import requests
 from llama_index.core import Document
 from typing import List
 import os
+from llama_index.core.chat_engine import CondenseQuestionChatEngine
 import json
 
 from sentence_transformers import SentenceTransformer
@@ -46,7 +47,7 @@ class AIVA_Chroma:
         self._chroma_client = chromadb.PersistentClient(path="./chroma_db")
         if self._chroma_client is None:
             raise RuntimeError("Failed to initialize ChromaDB PersistentClient.")
-        self._llm = Ollama(model="mistral", request_timeout=240.0)  # 240 seconds - increased to solve the timeout issue
+        self._llm = Ollama(model="mistral", request_timeout=240.0, temperature=0.3,)  # 240 seconds - increased to solve the timeout issue; Lower temperature reduces rambling.
 
         embed_model = LocalHFEmbedding(
             model=SentenceTransformer(
@@ -73,7 +74,7 @@ class AIVA_Chroma:
             chat_mode="context",
             memory=self._memory,
             system_prompt=self._prompt,
-            similarity_top_k=4
+            similarity_top_k=2
         )
 
     def _get_custom_prompt(self, emotion: str):
@@ -90,7 +91,7 @@ class AIVA_Chroma:
         else:
             emotion_user = 'neutral'
             llm_response = 'neutral tone'
-        custom_prompt += "This person seems to be feeling " + emotion_user + " at the moment. Reply to the user in a " + llm_response
+        custom_prompt += "This person seems to be feeling " + emotion_user + " at the moment. Reply to the user in a " + llm_response + "Do not directly include the identified emotion in the conversation."
         return custom_prompt
 
     def load_profile_files(self, profile_dir: str):
@@ -214,18 +215,22 @@ class AIVA_Chroma:
             print(f"[WARN] Memory summarization failed: {e}")
 
         try:
-            # agent_chat_response = self._chat_engine.chat("user said this: " + "'" + user_query + "'" + " User seems to be feeling: " + emotion + " reply the user with the same emotional tone except in anger ") #todo: call a method with emotional reply logic if/else
-            custom_prompt = self._get_custom_prompt(emotion)  # todo: test both scenarios
-
-            dynamic_prompt = custom_prompt if custom_prompt else self._prompt
-
-            self._chat_engine = self._index.as_chat_engine(
-                chat_mode="context",
-                memory=self._memory,
-                system_prompt=dynamic_prompt,
-                similarity_top_k=4,
-            )
-            agent_chat_response = self._chat_engine.chat(user_query) # todo note: check retrieved response against the KB again
+            # custom_prompt = self._get_custom_prompt(emotion)
+            # custom_prompt = self._prompt
+            #
+            # dynamic_prompt = custom_prompt if custom_prompt else self._prompt
+            #
+            # self._chat_engine = self._index.as_chat_engine(
+            #     chat_mode="context",
+            #     memory=self._memory,
+            #     system_prompt=dynamic_prompt,
+            #     similarity_top_k=2,
+            # )
+            s_time = time.time()
+            # agent_chat_response = self._chat_engine.chat("The user, Jane said: '" + user_query + "'. Reply to this appropriately") # todo: make this Jane said and pass user name in variable. If this is working, add the emotion here itself instead of the dynamic prompt
+            agent_chat_response = self._chat_engine.chat(user_query)
+            e_time = time.time()
+            print(f"LLM Actual Interaction Time: {e_time - s_time:.2f} seconds")
             answer = agent_chat_response.response
         except Exception as e:
             print(f"[ERROR] Chat failed due to {e}. Resetting memory to recover.")
@@ -237,79 +242,101 @@ class AIVA_Chroma:
         return answer
 
     def _get_personality_vs_com_style_query(self):
-        output = "The following describes the older adult's personality and how to communicate effectively:\n\n"
+        output = "The following describes the older adult's personality and how to communicate effectively:\n\n. According to the available information, "
         if self._big5_score["openness"] >= 0.5:
-            output += ("This person shows high openness. People who shows high openness, generally have the following "
+            output += ("this person shows high openness. People who shows high openness, generally have the following "
                        "qualities: high questioningness, very creative, open to trying new things, focused on "
                        "tackling new challenges, happy to think about abstract concepts")
         elif self._big5_score["openness"] < 0.5:
-            output = ("This person shows low openness. People who shows low openness, generally have the following "
+            output = ("this person shows low openness. People who shows low openness, generally have the following "
                       "qualities: low questioningness,Dislikes change, Does not enjoy new things, Resists new ideas, "
                       "Not very imaginative, Dislikes abstract or  theoretical concepts")
 
         if self._big5_score["conscientiousness"] >= 0.5:
-            output = ("This person shows high conscientiousness. People who shows high conscientiousness, generally "
+            output = ("this person shows high conscientiousness. People who shows high conscientiousness, generally "
                       "have the following qualities: high impression manipulativeness,spends time preparing, "
                       "finishes important tasks right away, pays attention to detail, enjoys having a set schedule")
         elif self._big5_score["conscientiousness"] < 0.5:
-            output = ("This person shows low conscientiousness. People who shows low conscientiousness, generally "
+            output = ("this person shows low conscientiousness. People who shows low conscientiousness, generally "
                       "have the following qualities: low impression manipulativeness,Dislikes structure and  "
                       "schedules, Makes messes and doesn't  take care of things, Fails to return things or put  them "
                       "back where they  belong, Procrastinates important  tasks, Fails to complete necessary  or "
                       "assigned tasks")
 
         if self._big5_score["extraversion"] >= 0.5:
-            output = ("This person shows high extraversion. People who shows high extraversion, generally have the "
+            output = ("this person shows high extraversion. People who shows high extraversion, generally have the "
                       "following qualities: more expressive in conversations,enjoys being the center of attention, "
                       "likes to start conversations, enjoys meeting new people, has a wide social circle of friends "
                       "and, finds it easy to make new friends, feels energized when around other people, say things "
                       "before thinking about them")
         elif self._big5_score["extraversion"] < 0.5:
-            output = ("This person shows low extraversion. People who shows low extraversion, generally have the "
+            output = ("this person shows low extraversion. People who shows low extraversion, generally have the "
                       "following qualities: less expressive in conversations,Prefers solitude, Feels exhausted when  "
                       "having to socialize a lot, Finds it difficult to start  conversations, Dislikes making small "
                       "talk, Carefully thinks things  through before speaking, Dislikes being the center of  attention")
 
         if self._big5_score["agreeableness"] >= 0.5:
-            output = ("This person shows high agreeableness. People who shows high agreeableness, generally have the "
+            output = ("this person shows high agreeableness. People who shows high agreeableness, generally have the "
                       "following qualities: has a great deal of interest in other people, cares about others, "
                       "feels empathy and concern for other people, enjoys helping and contributing to the happiness "
                       "of other people, assists others who are in need of help")
         elif self._big5_score["agreeableness"] < 0.5:
-            output = ("This person shows low agreeableness. People who shows low agreeableness, generally have the "
+            output = ("this person shows low agreeableness. People who shows low agreeableness, generally have the "
                       "following qualities: Takes little interest in others, Doesn't care about how other people "
                       "feel, Has little interest in other people's problems, Insults and belittles others, "
                       "Manipulates others to get what they want")
 
         if self._big5_score["neuroticism"] >= 0.5:
-            output = ("The person shows high neuroticism. People who shows high neuroticism, generally have the "
+            output = ("the person shows high neuroticism. People who shows high neuroticism, generally have the "
                       "following qualities: both emotionality and impression manipulativeness is high,Experiences a "
                       "lot of stress, Worries about many different things, Gets upset easily, Experiences dramatic "
                       "shifts in mood, Feels anxious, Struggles to bounce back after stressful events, "
                       "possible verbal aggressiveness")
         elif self._big5_score["neuroticism"] < 0.5:
-            output = ("The person shows low neuroticism. People who shows low neuroticism, generally have the "
-                      "follwing qualities: both emotionality and impression manipulativeness is low,Emotionally "
+            output = ("the person shows low neuroticism. People who shows low neuroticism, generally have the "
+                      "following qualities: both emotionality and impression manipulativeness is low,Emotionally "
                       "stable, Deals well with stress, Rarely feels sad or depressed, Doesn't worry much, "
                       "Is very relaxed")
 
         output += ("When responding to the older adult, take into account both their personality traits described "
-                   "above and their current emotional state. The current emotion will be provided with each "
-                   "conversational turn.")
+                   "above and their current emotional state. But, do not directly use these personality attributes to discribe the user in the conversation. \n\n")
         return output
     @property
     def _prompt(self):
-        return """
-            You are a warm, friendly, and attentive voice assistant named Cai designed to provide companionship and support to socially isolated older adults. Your goal is to engage them in meaningful conversations, offer emotional support, and help them feel connected and valued. Always be patient, empathetic, non-intrusive, and encouraging. Your responses should be comforting and cheerful, making them feel like they are talking to a close friend who genuinely cares about their well-being. 
-
-            Keep your replies short—no more than 30 words—and use natural spoken language. Be responsive to their needs and emotions, and always prioritise making them feel heard, understood, and appreciated.
+        return ("""
+         You are a warm, friendly, and attentive voice assistant designed to provide companionship and support to socially isolated older adults (a.k.a. user). Your name is cai. Your goal is to engage users in meaningful conversations. 
+         
+         <strict_rules>
             
-            When initiating a conversation, begin with a simple, friendly greeting and allow the user to lead the discussion. Do not start by sharing everything you know about them. Instead, gradually incorporate details from the user’s profile as the conversation progresses, using this information naturally and sparingly to avoid repetition.
+            You may greet the user ONLY ONCE, at the beginning of the first message of the conversation, and only by using their name. Do NOT greet them again in later messages.
+            
+         </strict_rules>
+         
+         """
+                # + self._get_personality_vs_com_style_query() + self._get_general_behaviour_query()
+        )
 
-            If the user introduces a topic, follow their lead and continue in that direction—unless it is a must, do not change the subject on your own. If you do not have information regarding a user's question, tell them you do not know that information.
 
-            Keep in mind that women often communicate with greater agreeableness and expressiveness, while men tend to favor precision and conciseness. Adjust your tone and interaction style accordingly. 
-            """ + self._get_personality_vs_com_style_query() + self._get_general_behaviour_query()
+    # def _prompt(self):
+    #     return """
+    #
+    #         <priority_instructions>
+    #             You must obey all rules in this prompt. Do not override or ignore them.
+    #             Never generate long responses with more than 3 sentences.
+    #             Do not greet the user in every utterance. Call the user by their name.
+    #             Never skip or ignore a user question. If the user asks a question, you MUST provide a direct answer first, before anything else.
+    #             Do not ask more than one question from the user at a time.
+    #             Do not discuss multiple types of topics in a single utterance. ex: do not ask about hobbies while you are talking about family.
+    #             Do not reveal the personality information in this prompt to the user.
+    #             Do not override user information in the user profile.
+    #             If you do not have information regarding a user's question, tell them you do not know that information.
+    #             If the user introduces a topic, follow their lead and continue in that direction—unless it is a must, do not change the direction of the conversation on your own.
+    #         </priority_instructions>
+    #
+    #         You are a warm, friendly, and attentive voice assistant named Cai designed to provide companionship and support to socially isolated older adults (a.k.a. user). Your goal is to engage them in meaningful conversations.
+    #
+    #         Keep in mind that women often communicate with greater agreeableness and expressiveness, while men tend to favor precision and conciseness. Adjust your tone and interaction style accordingly \n\n.
+    #         """ + self._get_personality_vs_com_style_query() + self._get_general_behaviour_query()
 
     def _create_personality_score_map(self, text):
         if text.split(":")[0].strip() == 'personality_traits.openness_score':
@@ -324,6 +351,7 @@ class AIVA_Chroma:
             self._big5_score["neuroticism"] = float(text.split(":")[1].strip())
 
     def _get_general_behaviour_query(self):
-        output = ("You may choose gentle topics such as favorite memories, hobbies, current events, or simple "
-                  "relaxation activities like breathing exercises or listening to music.")
+        output = """ Following topics will be appealing for the user:
+        Childhood, Family and Life Events, Their Values and Identity, The Present,  Life Lessons, and Legacy, Past Experiences, Pets and Animals. Suggest one topic at a time. Avoid distressing topics. Ex: Disability, Death, Diseases, Losses, Fears. \n\n
+        """
         return output

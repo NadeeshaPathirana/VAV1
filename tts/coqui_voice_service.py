@@ -36,14 +36,14 @@ def play_text_to_speech(text, emotion="neutral", pitch=1.0, speed=0.25):
 
         # Play the audio
         wave_obj = sa.WaveObject.from_wave_file("temp_audio.wav")
+        end_time = time.time()
+        print(f"TTS Execution Time: {end_time - start_time:.2f} seconds")
         play_obj = wave_obj.play()
         play_obj.wait_done()
 
         # Remove temp file
         os.remove("temp_audio.wav")
 
-        end_time = time.time()
-        print(f"TTS Execution Time: {end_time - start_time:.2f} seconds")
     except Exception as e:
         print(f"[ERROR] TTS failed for sentence {text}: {e}")
         answer = "I'm sorry, I had a little trouble replying to you just now — but I’m back!"

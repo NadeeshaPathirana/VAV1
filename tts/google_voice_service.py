@@ -26,3 +26,5 @@ def play_text_to_speech(text, language='en', slow=False):
     end_time = time.time()  # End time measurement
     execution_time = end_time - start_time
     print(f"TTS Execution Time: {execution_time:.2f} seconds")  # Print the total execution time
+
+# play_text_to_speech("Hi there, nice to meet you")

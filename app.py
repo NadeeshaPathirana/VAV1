@@ -4,22 +4,27 @@ import numpy as np
 from faster_whisper import WhisperModel
 from scipy.io import wavfile
 
+import webview
+import time
+
 from emotion_recognition.SpeechEmotionRecognizer import SpeechEmotionRecognizer
 # from emotion_recognition.SpeechEmotionRecognizerV2 import SpeechEmotionRecognizerV2
-# from tts import google_voice_service as vs
+from tts import google_voice_service as vsg
 # from tts import pyttx_tts_voice_service as vs
-from tts import coqui_voice_service as vs
-# from tts import speechify_voice_service as vs
-from rag.AIVA import AIVA
+# from tts import coqui_voice_service as vs
+from tts import speechify_voice_service as vs
+# from rag.AIVA import AIVA
 from rag.AIVA_Chroma import AIVA_Chroma
+from rag.AIVA_Chroma_2 import AIVA_Chroma_2
 
 DEFAULT_MODEL_SIZE = "small"  # set from medium to small to improve speed of the transcription
 DEFAULT_CHUNK_LENGTH = 0.5  # smaller this value -> audio recording is efficient, but can only record very small chunks
 
 # ai_assistant = AIVoiceAssistant() # first version
 # ai_assistant = AIVA() # second version
-ai_assistant = AIVA_Chroma()
-recognizer = SpeechEmotionRecognizer("C:/Users/220425722/Desktop/Python/Emotion Recognition/Improved Models/s3prl logs/Hubert/s3prl_hubert_model/")
+# ai_assistant = AIVA_Chroma()
+ai_assistant = AIVA_Chroma_2()
+recognizer = SpeechEmotionRecognizer()
 # recognizer = SpeechEmotionRecognizerV2()
 
 # V3 - trying to optimise the recording process
@@ -43,12 +48,12 @@ def record_audio_chunk(stream, chunk_length=DEFAULT_CHUNK_LENGTH):
     if is_silence(audio_data):
         end_time = time.time()  # End time measurement
         execution_time = end_time - start_time
-        print(f"Record Audio Execution Time - is silence: {execution_time:.2f} seconds")  # Print the total execution time
+        # print(f"Record Audio Execution Time - is silence: {execution_time:.2f} seconds")  # Print the total execution time
         return None  # Indicate silence
     else:
         end_time = time.time()  # End time measurement
         execution_time = end_time - start_time
-        print(f"Record Audio Execution Time - with audio: {execution_time:.2f} seconds")  # Print the total execution time
+        # print(f"Record Audio Execution Time - with audio: {execution_time:.2f} seconds")  # Print the total execution time
         return audio_data  # Return audio chunk
 
 
@@ -75,6 +80,27 @@ def main():
     stream = audio.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
 
     try:
+
+        ##### First interaction
+        response = ai_assistant.interact_with_llm('Introduce yourself and ask the user about what they would like to '
+                                                  'talk about today.', 'Neutral')
+
+        if response:
+            response = response.lstrip()
+            print(f"AI Assistant: {response}")
+
+            # Stop mic input to avoid feedback
+            stream.stop_stream()
+
+            # Play the AI response
+            try:
+                vs.play_text_to_speech(response, 'Neutral')  # for coqui and speechify
+            except:
+                print("TTS Error")
+
+            # Restart mic input
+            stream.start_stream()
+        #####
 
         while True:
             audio_chunks = []
@@ -121,7 +147,10 @@ def main():
                         stream.stop_stream()
 
                         # Play the AI response
-                        vs.play_text_to_speech(response)
+                        try:
+                            vs.play_text_to_speech(response, emotion)  # for coqui and speechify
+                        except:
+                            print("TTS Error")
 
                         # Restart mic input
                         stream.start_stream()
